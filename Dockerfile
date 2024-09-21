@@ -2,7 +2,7 @@
 FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
 
 # Stage 2: Build stage for SonarQube Scanner
-FROM openjdk:17-jre-slim as sonar-scanner-builder
+FROM openjdk:17-jdk-slim as sonar-scanner-builder
 
 # Install wget and unzip
 RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
