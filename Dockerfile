@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     unzip \
-    openjdk-11-jre-headless \
+    openjdk-17-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 # Install SonarQube Scanner
