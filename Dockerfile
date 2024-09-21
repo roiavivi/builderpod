@@ -24,8 +24,10 @@ RUN wget -O sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/
 
 # Install Kaniko
 RUN mkdir -p /kaniko \
-    && wget -O /kaniko/executor https://github.com/GoogleContainerTools/kaniko/releases/download/v1.23.2/executor \
-    && chmod +x /kaniko/executor
+    && wget -O /kaniko/kaniko.tar.gz https://github.com/GoogleContainerTools/kaniko/releases/download/v1.23.2/kaniko-linux-amd64.tar.gz \
+    && tar -xzf /kaniko/kaniko.tar.gz -C /kaniko \
+    && chmod +x /kaniko/executor \
+    && rm /kaniko/kaniko.tar.gz
 
 # Install Trivy
 RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0.20.2_Linux-64bit.deb \
