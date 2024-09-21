@@ -1,6 +1,9 @@
 # Base image
 FROM ubuntu:20.04
 
+# Set environment variable to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
