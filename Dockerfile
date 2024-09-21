@@ -2,18 +2,10 @@
 FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
 
 # Stage 2: Build stage for SonarQube Scanner
-FROM openjdk:17-jdk-slim as sonar-scanner-builder
+FROM sonarsource/sonar-scanner-cli:4.6 as sonar-scanner-builder
 
-# Install wget and unzip
+# Install wget and unzip (if needed)
 RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
-
-RUN wget -O sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip \
-    && unzip sonar-scanner-cli.zip -d /opt \
-    && rm sonar-scanner-cli.zip
-
-# Set JAVA_HOME and update PATH
-ENV JAVA_HOME=/usr/local/openjdk-17
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Stage 3: Final image
 FROM ubuntu:20.04
@@ -33,12 +25,8 @@ RUN apt-get update && apt-get install -y \
 COPY --from=kaniko-builder /kaniko/executor /kaniko/executor
 
 # Copy SonarQube Scanner from the build stage
-COPY --from=sonar-scanner-builder /opt/sonar-scanner-4.6.2.2472-linux /opt/sonar-scanner-4.6.2.2472-linux
-RUN ln -s /opt/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
-
-# Set JAVA_HOME and update PATH in the final image
-ENV JAVA_HOME=/usr/local/openjdk-17
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
+COPY --from=sonar-scanner-builder /opt/sonar-scanner /opt/sonar-scanner
+RUN ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
 # Install Trivy
 RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0.20.2_Linux-64bit.deb \
@@ -46,8 +34,8 @@ RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0
     && rm trivy_0.20.2_Linux-64bit.deb
 
 # Set environment variables for SonarQube Scanner
-ENV SONAR_SCANNER_HOME=/opt/sonar-scanner-4.6.2.2472-linux
-ENV PATH=$PATH:/opt/sonar-scanner-4.6.2.2472-linux/bin
+ENV SONAR_SCANNER_HOME=/opt/sonar-scanner
+ENV PATH=$PATH:/opt/sonar-scanner/bin
 
 # Set the default command to sleep
 CMD ["sleep", "9999999"]
