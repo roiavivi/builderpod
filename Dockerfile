@@ -1,8 +1,5 @@
 # Stage 1: Build stage for Kaniko
-FROM golang:1.16 as kaniko-builder
-RUN mkdir -p /kaniko \
-    && wget -O /kaniko/executor https://github.com/GoogleContainerTools/kaniko/releases/download/v1.6.0/executor \
-    && chmod +x /kaniko/executor
+FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
 
 # Stage 2: Build stage for SonarQube Scanner
 FROM openjdk:11-jre-slim as sonar-scanner-builder
