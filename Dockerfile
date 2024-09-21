@@ -1,17 +1,4 @@
-# Stage 1: Build stage for Kaniko
-FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
-
-# Stage 2: Build stage for SonarQube Scanner
-FROM sonarsource/sonar-scanner-cli:4.6 as sonar-scanner-builder
-
-# Install wget, unzip, and Java using apk
-RUN apk update && apk add --no-cache wget unzip openjdk11-jre
-
-# Set JAVA_HOME and update PATH
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
-
-# Stage 3: Final image
+# Base image
 FROM ubuntu:20.04
 
 # Install dependencies
@@ -23,18 +10,19 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     unzip \
+    openjdk-11-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Kaniko executor from the build stage
-COPY --from=kaniko-builder /kaniko/executor /kaniko/executor
+# Install SonarQube Scanner
+RUN wget -O sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip \
+    && unzip sonar-scanner-cli.zip -d /opt \
+    && rm sonar-scanner-cli.zip \
+    && ln -s /opt/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
-# Copy SonarQube Scanner from the build stage
-COPY --from=sonar-scanner-builder /opt/sonar-scanner /opt/sonar-scanner
-RUN ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
-
-# Set JAVA_HOME and update PATH in the final image
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
+# Install Kaniko
+RUN mkdir -p /kaniko \
+    && wget -O /kaniko/executor https://github.com/GoogleContainerTools/kaniko/releases/download/v1.6.0/executor \
+    && chmod +x /kaniko/executor
 
 # Install Trivy
 RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0.20.2_Linux-64bit.deb \
@@ -42,8 +30,8 @@ RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0
     && rm trivy_0.20.2_Linux-64bit.deb
 
 # Set environment variables for SonarQube Scanner
-ENV SONAR_SCANNER_HOME=/opt/sonar-scanner
-ENV PATH=$PATH:/opt/sonar-scanner/bin
+ENV SONAR_SCANNER_HOME=/opt/sonar-scanner-4.6.2.2472-linux
+ENV PATH=$PATH:/opt/sonar-scanner-4.6.2.2472-linux/bin
 
 # Set the default command to sleep
 CMD ["sleep", "9999999"]
