@@ -1,4 +1,7 @@
-# Base image
+# Stage 1: Build stage for Kaniko
+FROM gcr.io/kaniko-project/executor:debug as kaniko-builder
+
+# Stage 2: Final image
 FROM ubuntu:20.04
 
 # Set environment variable to avoid interactive prompts
@@ -22,12 +25,8 @@ RUN wget -O sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/
     && rm sonar-scanner-cli.zip \
     && ln -s /opt/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
-# Install Kaniko
-RUN mkdir -p /kaniko \
-    && wget -O /kaniko/kaniko.tar.gz https://github.com/GoogleContainerTools/kaniko/releases/download/v1.23.2/kaniko-linux-amd64.tar.gz \
-    && tar -xzf /kaniko/kaniko.tar.gz -C /kaniko \
-    && chmod +x /kaniko/executor \
-    && rm /kaniko/kaniko.tar.gz
+# Copy Kaniko executor from the build stage
+COPY --from=kaniko-builder /kaniko/executor /kaniko/executor
 
 # Install Trivy
 RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0.20.2_Linux-64bit.deb \
