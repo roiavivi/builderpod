@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Kaniko from the build stage
-COPY --from=kaniko-builder /kaniko /kaniko
+# Copy Kaniko executor from the build stage
+COPY --from=kaniko-builder /kaniko/executor /kaniko/executor
 
 # Copy SonarQube Scanner from the build stage
 COPY --from=sonar-scanner-builder /opt/sonar-scanner-4.6.2.2472-linux /opt/sonar-scanner-4.6.2.2472-linux
