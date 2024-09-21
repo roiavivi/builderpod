@@ -4,8 +4,8 @@ FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
 # Stage 2: Build stage for SonarQube Scanner
 FROM sonarsource/sonar-scanner-cli:4.6 as sonar-scanner-builder
 
-# Install wget and unzip (if needed)
-RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
+# Install wget and unzip using apk
+RUN apk update && apk add --no-cache wget unzip
 
 # Stage 3: Final image
 FROM ubuntu:20.04
