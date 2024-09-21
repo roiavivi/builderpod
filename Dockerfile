@@ -5,10 +5,10 @@ FROM gcr.io/kaniko-project/executor:v1.6.0 as kaniko-builder
 FROM sonarsource/sonar-scanner-cli:4.6 as sonar-scanner-builder
 
 # Install wget, unzip, and Java using apk
-RUN apk update && apk add --no-cache wget unzip openjdk17-jre
+RUN apk update && apk add --no-cache wget unzip openjdk11-jre
 
 # Set JAVA_HOME and update PATH
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Stage 3: Final image
@@ -33,7 +33,7 @@ COPY --from=sonar-scanner-builder /opt/sonar-scanner /opt/sonar-scanner
 RUN ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
 # Set JAVA_HOME and update PATH in the final image
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Install Trivy
