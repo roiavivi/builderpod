@@ -1,10 +1,7 @@
-# Stage 1: Build stage for Kaniko
-FROM gcr.io/kaniko-project/executor:debug as kaniko-builder
-
-# Stage 2: Build stage for SonarQube Scanner
+# Stage 1: Build stage for SonarQube Scanner
 FROM sonarsource/sonar-scanner-cli:4.6 as sonar-scanner-builder
 
-# Stage 3: Final image
+# Stage 2: Final image
 FROM ubuntu:20.04
 
 # Set environment variable to avoid interactive prompts
@@ -25,14 +22,6 @@ RUN apt-get update && apt-get install -y \
 # Copy SonarQube Scanner from the build stage
 COPY --from=sonar-scanner-builder /opt/sonar-scanner /opt/sonar-scanner
 RUN ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
-
-# Copy Kaniko executor from the build stage
-COPY --from=kaniko-builder /kaniko/executor /kaniko/executor
-
-# Install Trivy
-RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.20.2/trivy_0.20.2_Linux-64bit.deb \
-    && dpkg -i trivy_0.20.2_Linux-64bit.deb \
-    && rm trivy_0.20.2_Linux-64bit.deb
 
 # Set environment variables for SonarQube Scanner
 ENV SONAR_SCANNER_HOME=/opt/sonar-scanner
